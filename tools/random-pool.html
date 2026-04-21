@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>灵动随机数生成器 | 数字池·序列生成</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(145deg, #f0f4fa 0%, #dce3ec 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .card {
+            max-width: 980px;
+            width: 100%;
+            height: 96vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
+            padding: 1.4rem 2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .hero h1 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .hero h1::before {
+            content: "🎲";
+            font-size: 1.9rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .hero p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 0.4rem;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 1.5rem 2rem 1.5rem 2rem;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            scroll-behavior: smooth;
+        }
+
+        .input-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #ffffffcc;
+            border-radius: 2rem;
+            padding: 0.2rem 0;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2c3e4e;
+            margin-bottom: 0.4rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 2rem;
+            border: 1px solid #cfdfed;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .input-wrapper:focus-within {
+            border-color: #3b7cbf;
+            box-shadow: 0 0 0 3px rgba(59,124,191,0.2);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: #1e2f3c;
+            border-radius: 2rem;
+        }
+
+        .input-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .input-group input[type="number"]::-webkit-inner-spin-button,
+        .input-group input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+
+        .range-hint {
+            font-size: 0.65rem;
+            color: #5f7f9a;
+            margin-top: 0.3rem;
+            margin-left: 0.8rem;
+        }
+
+        .quick-n-group {
+            margin: 0.2rem 0 1.2rem 0;
+        }
+        .quick-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c5a7a;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .quick-label::before {
+            content: "⚡";
+            font-size: 0.85rem;
+        }
+        .n-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+        }
+        .n-quick-btn {
+            background: #f0f4f9;
+            border: 1px solid #cde0ec;
+            border-radius: 2rem;
+            padding: 0.45rem 1.1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1f5e85;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .n-quick-btn:hover {
+            background: #e2ecf5;
+            border-color: #9bb7ce;
+            transform: translateY(-1px);
+        }
+        .n-quick-btn.active-quick {
+            background: #1f6392;
+            border-color: #1f6392;
+            color: white;
+            box-shadow: 0 2px 6px rgba(31,99,146,0.3);
+        }
+
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 0.5rem 0 1.5rem 0;
+            align-items: center;
+        }
+
+        .btn {
+            border: none;
+            background: #eef2f7;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: #1f6392;
+            color: white;
+            box-shadow: 0 4px 8px -2px rgba(31,99,146,0.3);
+        }
+        .btn-primary:hover {
+            background: #0e4b70;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1px solid #cbdde9;
+            color: #2c5a7a;
+        }
+        .btn-secondary:hover {
+            background: #f5f9fe;
+            border-color: #9bb7cc;
+        }
+
+        .btn-toggle {
+            background: #f0f4f9;
+            border: 1px solid #cde0ec;
+            color: #2c5a7a;
+        }
+        .btn-toggle.active {
+            background: #2c8a5e;
+            border-color: #2c8a5e;
+            color: white;
+            box-shadow: 0 2px 6px rgba(44,138,94,0.3);
+        }
+        .btn-toggle.active:hover {
+            background: #1f6e4a;
+        }
+
+        .stats {
+            background: #eef3fa;
+            border-radius: 1.5rem;
+            padding: 0.9rem 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0.8rem;
+            font-size: 0.85rem;
+        }
+        .stats span {
+            font-weight: 700;
+            background: white;
+            padding: 0.2rem 0.7rem;
+            border-radius: 2rem;
+            color: #1f6392;
+            margin-left: 0.4rem;
+        }
+        .used-digits {
+            font-family: monospace;
+            font-weight: 600;
+            background: white;
+            padding: 0.2rem 0.9rem;
+            border-radius: 2rem;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+
+        .result-area {
+            background: #ffffffdd;
+            border-radius: 1.6rem;
+            padding: 1rem;
+            transition: all 0.1s;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            border-bottom: 2px dashed #c7dbe9;
+            padding-bottom: 0.5rem;
+        }
+        .result-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f3e4b;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .inline-generate-btn {
+            background: #1f6392;
+            border: none;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            letter-spacing: 0.3px;
+        }
+        .inline-generate-btn:hover {
+            background: #0e4b70;
+            transform: scale(0.97);
+        }
+        .counter-badge {
+            background: #dce7f0;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .digits-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: flex-start;
+            padding: 0.2rem 0.1rem;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .digit-chip {
+            background: linear-gradient(145deg, #ffffff, #f3f8fe);
+            border-radius: 2rem;
+            min-width: 2.8rem;
+            height: 2.8rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f4e6e;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 1px solid #e2edf6;
+            transition: all 0.1s ease;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .empty-placeholder {
+            text-align: center;
+            padding: 1.5rem;
+            color: #8aaec0;
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+
+        .footer-note {
+            margin-top: 1.2rem;
+            font-size: 0.65rem;
+            text-align: center;
+            color: #6c8dab;
+            border-top: 1px solid #e2ecf3;
+            padding-top: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 1rem;
+            }
+            .digit-chip {
+                min-width: 2.4rem;
+                height: 2.4rem;
+                font-size: 1rem;
+            }
+            .btn {
+                padding: 0.5rem 1.2rem;
+            }
+            .n-quick-btn {
+                padding: 0.35rem 0.9rem;
+                font-size: 0.8rem;
+            }
+            .inline-generate-btn {
+                padding: 0.25rem 0.9rem;
+                font-size: 0.7rem;
+            }
+            .result-header h3 {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="hero">
+        <h1>数字骰池 · 随机发生器</h1>
+        <p>从 {1,2,3,4,5,6,7} 中随机抽取不重复的数字作为“池子” → 再从池中可重复抽取，生成长序列</p>
+    </div>
+    <div class="content">
+        <div class="input-panel">
+            <div class="input-group">
+                <label>🎯 池子大小 <em style="font-weight: normal;">(n)</em></label>
+                <div class="input-wrapper">
+                    <input type="number" id="inputN" min="1" max="7" value="3" step="1">
+                </div>
+                <div class="range-hint">范围 1 ~ 7 (从7个数字里选n个不重复)</div>
+            </div>
+            <div class="input-group">
+                <label>🔢 生成个数 <em style="font-weight: normal;">(x)</em></label>
+                <div class="input-wrapper">
+                    <input type="number" id="inputX" min="1" max="500" value="30" step="1">
+                </div>
+                <div class="range-hint">长度 ≥1 (建议 ≤200 保证体验)</div>
+            </div>
+        </div>
+
+        <div class="quick-n-group">
+            <div class="quick-label">一键切换池子大小</div>
+            <div class="n-buttons" id="quickNButtons">
+                <button data-n="3" class="n-quick-btn">🎲 n = 3</button>
+                <button data-n="4" class="n-quick-btn">🎲 n = 4</button>
+                <button data-n="5" class="n-quick-btn">🎲 n = 5</button>
+                <button data-n="6" class="n-quick-btn">🎲 n = 6</button>
+                <button data-n="7" class="n-quick-btn">🎲 n = 7</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" id="generateBtn">✨ 生成随机序列</button>
+            <button class="btn btn-secondary" id="resetDefaultBtn">⟳ 重置默认 (n=3, x=30)</button>
+            <button class="btn btn-toggle" id="toggleNoRepeatBtn">🚫 避免相邻重复 (关)</button>
+        </div>
+
+        <div class="stats" id="statsPanel">
+            <div>🎲 本次池子(抽中的不重复数字): <span id="selectedPoolDisplay" class="used-digits">—</span></div>
+            <div>📊 实际使用的数字种类: <span id="usedUniqueCount">0</span></div>
+        </div>
+
+        <div class="result-area">
+            <div class="result-header">
+                <h3>
+                    📋 生成的数字序列
+                    <button id="inlineGenerateBtn" class="inline-generate-btn">✨ 生成随机序列</button>
+                </h3>
+                <div class="counter-badge" id="sequenceLengthBadge">长度: 0</div>
+            </div>
+            <div id="digitsContainer" class="digits-grid">
+                <div class="empty-placeholder">点击「生成随机序列」或快捷按钮查看结果</div>
+            </div>
+        </div>
+        <div class="footer-note">
+            💡 算法逻辑: 每次从 {1,2,3,4,5,6,7} 中随机抽取 <strong>n</strong> 个不重复数字作为可用的数字池，然后从该池中独立随机抽取 <strong>x</strong> 次（可重复）生成最终序列。<br>
+            🚫 开启「避免相邻重复」后，相邻两个位置的数字不会相同（若池中只有1个数字则无法避免，会提示）。
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========================
+    // 纯前端JS实现
+    const FULL_SET = [1, 2, 3, 4, 5, 6, 7];
+
+    // 避免相邻重复模式的开关状态
+    let avoidAdjacentRepeat = false;
+
+    /**
+     * 从 FULL_SET 中随机选出 n 个不重复的数字 (Fisher-Yates 洗牌取前n)
+     */
+    function selectRandomDigits(n) {
+        if (n < 1 || n > FULL_SET.length) {
+            throw new Error(`n必须在1-${FULL_SET.length}之间`);
+        }
+        const shuffled = [...FULL_SET];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, n);
+    }
+
+    /**
+     * 核心生成函数: 从7个数字里随机选n个不重复数字作为池子，生成x个数字（可重复）
+     * @param {number} n 池子大小
+     * @param {number} x 生成个数
+     * @param {boolean} avoidRepeat 是否避免相邻重复
+     * @returns {object} { sequence, pool }
+     */
+    function generate(n, x, avoidRepeat) {
+        let validN = n;
+        let validX = x;
+        if (isNaN(validN) || validN < 1) validN = 1;
+        if (validN > 7) validN = 7;
+        if (isNaN(validX) || validX < 1) validX = 1;
+        if (validX > 800) validX = 800;
+
+        const selectedPool = selectRandomDigits(validN);
+        const sequence = [];
+
+        if (selectedPool.length === 0) {
+            return { sequence, pool: selectedPool };
+        }
+
+        // 如果池子只有一个数字，且开启了避免相邻重复，则无法避免（因为只有这一个数字可选）
+        if (avoidRepeat && selectedPool.length === 1 && validX > 1) {
+            // 这种情况下无法避免相邻重复，但仍然正常生成（会相邻重复），但给出提示
+            console.warn("池子只有1个数字，无法避免相邻重复");
+        }
+
+        for (let i = 0; i < validX; i++) {
+            if (avoidRepeat && selectedPool.length > 1 && sequence.length > 0) {
+                // 获取上一个数字，从池子中排除它，然后随机选一个
+                const lastNum = sequence[sequence.length - 1];
+                const available = selectedPool.filter(num => num !== lastNum);
+                if (available.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * available.length);
+                    sequence.push(available[randomIndex]);
+                } else {
+                    // 理论上池子大于1时，排除上一个后至少还有1个，但以防万一
+                    const randomIndex = Math.floor(Math.random() * selectedPool.length);
+                    sequence.push(selectedPool[randomIndex]);
+                }
+            } else {
+                const randomIndex = Math.floor(Math.random() * selectedPool.length);
+                sequence.push(selectedPool[randomIndex]);
+            }
+        }
+
+        return { sequence, pool: selectedPool };
+    }
+
+    // DOM 元素
+    const inputN = document.getElementById('inputN');
+    const inputX = document.getElementById('inputX');
+    const generateBtn = document.getElementById('generateBtn');
+    const resetDefaultBtn = document.getElementById('resetDefaultBtn');
+    const digitsContainer = document.getElementById('digitsContainer');
+    const selectedPoolDisplay = document.getElementById('selectedPoolDisplay');
+    const usedUniqueCountSpan = document.getElementById('usedUniqueCount');
+    const sequenceLengthBadge = document.getElementById('sequenceLengthBadge');
+    const quickButtons = document.querySelectorAll('.n-quick-btn');
+    const inlineGenerateBtn = document.getElementById('inlineGenerateBtn');
+    const toggleNoRepeatBtn = document.getElementById('toggleNoRepeatBtn');
+
+    // 渲染数字序列
+    function renderSequence(sequence, pool, avoidRepeat) {
+        digitsContainer.innerHTML = '';
+        if (!sequence || sequence.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'empty-placeholder';
+            emptyMsg.innerText = '暂无数据，请调整参数生成';
+            digitsContainer.appendChild(emptyMsg);
+            sequenceLengthBadge.innerText = `长度: 0`;
+            usedUniqueCountSpan.innerText = '0';
+            selectedPoolDisplay.innerText = '—';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        for (let num of sequence) {
+            const chip = document.createElement('div');
+            chip.className = 'digit-chip';
+            chip.textContent = num;
+            fragment.appendChild(chip);
+        }
+        digitsContainer.appendChild(fragment);
+        sequenceLengthBadge.innerText = `长度: ${sequence.length}`;
+
+        if (sequence.length > 0) {
+            const uniqueNumbers = [...new Set(sequence)];
+            usedUniqueCountSpan.innerText = uniqueNumbers.length;
+        } else {
+            usedUniqueCountSpan.innerText = '0';
+        }
+
+        if (pool && pool.length) {
+            selectedPoolDisplay.innerText = pool.join(' · ');
+        } else {
+            selectedPoolDisplay.innerText = '—';
+        }
+
+        // 显示模式提示
+        const statsPanel = document.getElementById('statsPanel');
+        let modeHint = statsPanel.querySelector('.mode-hint');
+        if (!modeHint) {
+            modeHint = document.createElement('div');
+            modeHint.className = 'mode-hint';
+            modeHint.style.fontSize = '0.7rem';
+            modeHint.style.marginLeft = 'auto';
+            modeHint.style.color = '#5f7f9a';
+            statsPanel.appendChild(modeHint);
+        }
+        if (avoidRepeat && pool.length > 1) {
+            modeHint.innerHTML = '🚫 模式: 避免相邻重复已开启';
+        } else if (avoidRepeat && pool.length === 1) {
+            modeHint.innerHTML = '⚠️ 池子只有1个数字，无法避免相邻重复';
+        } else {
+            modeHint.innerHTML = '🎲 模式: 允许相邻重复';
+        }
+    }
+
+    // 简洁toast提示
+    function showMessage(msg, isError = false) {
+        const toast = document.createElement('div');
+        toast.innerText = msg;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.backgroundColor = isError ? '#c0392b' : '#2c6e2f';
+        toast.style.color = 'white';
+        toast.style.padding = '0.6rem 1.2rem';
+        toast.style.borderRadius = '3rem';
+        toast.style.fontSize = '0.8rem';
+        toast.style.fontWeight = '500';
+        toast.style.zIndex = '999';
+        toast.style.boxShadow = '0 5px 12px rgba(0,0,0,0.2)';
+        toast.style.backdropFilter = 'blur(4px)';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 2200);
+        }, 2000);
+    }
+
+    // 高亮当前活跃的快捷按钮
+    function highlightActiveQuickButton() {
+        let currentN = parseInt(inputN.value, 10);
+        if (isNaN(currentN)) currentN = 3;
+        quickButtons.forEach(btn => {
+            const btnN = parseInt(btn.getAttribute('data-n'), 10);
+            if (btnN === currentN) {
+                btn.classList.add('active-quick');
+            } else {
+                btn.classList.remove('active-quick');
+            }
+        });
+    }
+
+    // 更新避免相邻重复按钮的UI状态
+    function updateToggleButtonUI() {
+        if (avoidAdjacentRepeat) {
+            toggleNoRepeatBtn.innerHTML = '✅ 避免相邻重复 (开)';
+            toggleNoRepeatBtn.classList.add('active');
+        } else {
+            toggleNoRepeatBtn.innerHTML = '🚫 避免相邻重复 (关)';
+            toggleNoRepeatBtn.classList.remove('active');
+        }
+    }
+
+    // 核心生成+渲染
+    function performGeneration() {
+        let rawN = inputN.value.trim();
+        let rawX = inputX.value.trim();
+
+        let n = parseInt(rawN, 10);
+        let x = parseInt(rawX, 10);
+
+        if (isNaN(n)) {
+            showMessage(`请输入有效的 n (数字 1~7)`, true);
+            n = 3;
+            inputN.value = n;
+        } else if (n < 1 || n > 7) {
+            showMessage(`n 必须在 1 到 7 之间，当前为 ${n}，已自动调整`, true);
+            n = Math.min(7, Math.max(1, n));
+            inputN.value = n;
+        }
+
+        if (isNaN(x)) {
+            showMessage(`请输入有效的生成个数 x (正整数)`, true);
+            x = 30;
+            inputX.value = x;
+        } else if (x < 1) {
+            showMessage(`生成个数 x 必须 ≥ 1，已自动设为 1`, true);
+            x = 1;
+            inputX.value = x;
+        } else if (x > 800) {
+            showMessage(`x 较大，已限制为 500 以保证流畅`, false);
+            x = 500;
+            inputX.value = x;
+        }
+
+        n = Math.min(7, Math.max(1, n));
+        if (x > 800) x = 800;
+
+        highlightActiveQuickButton();
+
+        try {
+            const { sequence, pool } = generate(n, x, avoidAdjacentRepeat);
+            renderSequence(sequence, pool, avoidAdjacentRepeat);
+
+            // 如果开启了避免相邻重复，且池子只有1个数字但x>1，给出友好提示
+            if (avoidAdjacentRepeat && pool.length === 1 && x > 1) {
+                showMessage(`池子只有 ${pool[0]} 一个数字，无法避免相邻重复`, false);
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage(`生成出错: ${error.message}`, true);
+            digitsContainer.innerHTML = '<div class="empty-placeholder">生成失败，请检查参数范围</div>';
+            selectedPoolDisplay.innerText = '❌ 错误';
+            usedUniqueCountSpan.innerText = '0';
+            sequenceLengthBadge.innerText = `长度: 0`;
+        }
+    }
+
+    // 重置为默认 n=3, x=30
+    function resetToDefault() {
+        inputN.value = '3';
+        inputX.value = '30';
+        highlightActiveQuickButton();
+        performGeneration();
+        showMessage('已恢复默认值 n=3, x=30', false);
+    }
+
+    // 切换避免相邻重复模式
+    function toggleAvoidRepeat() {
+        avoidAdjacentRepeat = !avoidAdjacentRepeat;
+        updateToggleButtonUI();
+        if (avoidAdjacentRepeat) {
+            showMessage('已开启「避免相邻重复」模式，相邻数字不会相同', false);
+        } else {
+            showMessage('已关闭「避免相邻重复」模式，允许相邻数字相同', false);
+        }
+        performGeneration();
+    }
+
+    // 快捷设置n值
+    function setNValue(n) {
+        if (n >= 1 && n <= 7) {
+            inputN.value = n;
+            highlightActiveQuickButton();
+            performGeneration();
+            showMessage(`已将池子大小设为 n = ${n}，并重新生成序列`, false);
+        } else {
+            showMessage(`n 值无效`, true);
+        }
+    }
+
+    // 页面初始化和事件绑定
+    function initialize() {
+        if (!inputN.value || inputN.value === '') inputN.value = '3';
+        if (!inputX.value || inputX.value === '') inputX.value = '30';
+        highlightActiveQuickButton();
+        updateToggleButtonUI();
+        performGeneration();
+
+        generateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            performGeneration();
+        });
+
+        if (inlineGenerateBtn) {
+            inlineGenerateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                performGeneration();
+            });
+        }
+
+        resetDefaultBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetToDefault();
+        });
+
+        // 绑定切换按钮
+        toggleNoRepeatBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAvoidRepeat();
+        });
+
+        quickButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const nVal = parseInt(btn.getAttribute('data-n'), 10);
+                if (!isNaN(nVal)) {
+                    setNValue(nVal);
+                }
+            });
+        });
+
+        const inputs = [inputN, inputX];
+        inputs.forEach(inp => {
+            inp.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performGeneration();
+                }
+            });
+        });
+
+        inputN.addEventListener('input', () => {
+            let rawN = inputN.value.trim();
+            let n = parseInt(rawN, 10);
+            if (!isNaN(n) && n >= 1 && n <= 7) {
+                highlightActiveQuickButton();
+            } else {
+                quickButtons.forEach(btn => btn.classList.remove('active-quick'));
+            }
+        });
+    }
+
+    initialize();
+</script>
+</body>
+</html>

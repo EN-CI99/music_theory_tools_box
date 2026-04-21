@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>灵动工具箱 | 创意工具集首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f0f4fa 0%, #dce3ec 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* 主容器 - 与卡片风格统一 */
+        .dashboard {
+            max-width: 1280px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* 顶部英雄区 */
+        .hero-section {
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
+            padding: 2rem 2.5rem;
+            color: white;
+        }
+
+        .hero-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .hero-section h1::before {
+            content: "🧰";
+            font-size: 2.2rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .hero-section .sub {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            max-width: 600px;
+        }
+
+        /* 内容区域 */
+        .content-panel {
+            padding: 2rem 2.5rem;
+        }
+
+        /* 统计/欢迎卡片 */
+        .welcome-card {
+            background: #eef3fa;
+            border-radius: 1.8rem;
+            padding: 1.2rem 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .welcome-text {
+            font-weight: 500;
+            color: #1f4e6e;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-total {
+            background: #1f6392;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* 工具网格 - 展示所有功能 */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.6rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        /* 工具卡片 */
+        .tool-card {
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(207, 223, 237, 0.6);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: #bdd4e4;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.15);
+            background: #ffffffec;
+        }
+
+        .tool-icon {
+            font-size: 2.6rem;
+            margin-bottom: 0.8rem;
+            display: inline-block;
+        }
+
+        .tool-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1f3e4b;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-desc {
+            font-size: 0.85rem;
+            color: #5a7c9a;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+            flex: 1;
+        }
+
+        .tool-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #7f9cbb;
+            border-top: 1px dashed #d4e2ef;
+            padding-top: 0.8rem;
+        }
+
+        .launch-badge {
+            background: #1f6392;
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .tool-card:hover .launch-badge {
+            background: #0e4b70;
+            transform: scale(0.98);
+        }
+
+        /* 装饰分割线 */
+        .divider-light {
+            height: 2px;
+            background: linear-gradient(90deg, #c7dbe9, transparent);
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7b98b5;
+            border-top: 1px solid #e2ecf3;
+            padding-top: 1.2rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 700px) {
+            body {
+                padding: 1rem;
+            }
+            .hero-section {
+                padding: 1.5rem;
+            }
+            .hero-section h1 {
+                font-size: 1.6rem;
+            }
+            .content-panel {
+                padding: 1.5rem;
+            }
+            .tools-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .tool-card {
+                padding: 1.2rem;
+            }
+        }
+
+        /* 空状态或额外提示 */
+        .coming-soon {
+            opacity: 0.7;
+        }
+        .coming-soon .launch-badge {
+            background: #9bb7ce;
+            cursor: default;
+        }
+        .tool-card.coming-soon:hover {
+            transform: none;
+            cursor: default;
+        }
+        .tool-card.coming-soon .launch-badge:hover {
+            background: #9bb7ce;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="hero-section">
+        <h1>灵动工具箱</h1>
+        <div class="sub">创意 · 极简 · 轻量工具集 — 每个工具都精心设计，开箱即用。</div>
+    </div>
+    <div class="content-panel">
+        <!-- 欢迎卡片 + 统计 -->
+        <div class="welcome-card">
+            <div class="welcome-text">
+                <span>✨ 嗨！探索下方实用工具</span>
+                <span class="badge-total" id="toolCountBadge">加载中...</span>
+            </div>
+            <div style="font-size: 0.75rem; color:#4f7ea0;">
+                💡 点击卡片即刻体验
+            </div>
+        </div>
+
+        <!-- 工具网格：展示所有功能列表 -->
+        <div class="tools-grid" id="toolsGrid">
+            <!-- 工具卡片将通过js动态生成，但为了清晰展示结构，采用静态+动态混合，但依然用js维护便于扩展 -->
+        </div>
+        <div class="divider-light"></div>
+        <div class="footer-note">
+            🎯 所有工具均运行于本地 | 数据安全 · 无服务端交互 | 持续更新更多有趣功能
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 工具配置列表 ----------
+    // 每个工具包含: id, 名称, 描述, 图标, 相对路径, 状态(active/coming)
+    // 目前第一个工具是“数字骰池·随机发生器”，路径指向同一目录下的子页面 (假设放在 /tools/random-pool.html)
+    // 但为了演示灵活，这里设置路径指向当前同级目录下的 "random-pool.html" 或 "digit-pool.html"
+    // 因为之前提供的随机数生成器页面可以是独立文件，我们按照标准命名: 将原页面保存为 "random-pool.html" 放在同一目录或子目录。
+    // 为了展示跳转逻辑，并且避免404，我们使用模拟路径 + 实际跳转提醒？但最好真实模拟:
+    // 实际开发中，可将原HTML代码保存为 ./tools/random-pool.html 或 ./random-pool.html。
+    // 由于当前环境演示，我们提供一个演示跳转: 如果点击“数字骰池”则新开页面（或者当前页面跳转）? 我们实现为当前窗口跳转，路径可配置。
+    // 为了让首页完整并且后续可扩展，我们在点击时进行路由跳转，同时保留可配置性。
+    // 此外其他工具展示为“即将上线”状态，仅展示UI。
+
+    const toolsList = [
+        {
+            id: "random-pool",
+            name: "数字骰池 · 随机发生器",
+            description: "从1~7中抽取不重复数字作为池子，再从池中可重复抽取生成长序列。支持横屏快捷操作，池大小一键切换。",
+            icon: "🎲",
+            path: "./tools/random-pool.html",     // 相对路径：与首页同级目录下的 random-pool.html
+            status: "active",
+            tag: "随机 · 序列"
+        },
+        {
+            "id": "88key-piano",
+            "name": "88键钢琴 · 标准符号标注",
+            "description": "完整的88键钢琴键盘，支持鼠标点击和键盘映射演奏。每个琴键显示主音名及等音标注，采用标准音乐符号（♯、♭、𝄪、𝄫），严格遵循符号在前、字母在后的书写规则。支持科学音高记法与传统分组法切换。",
+            "icon": "🎹",
+            "path": "./tools/88key-piano.html",
+            "status": "active",
+            "tag": "音乐 · 钢琴"
+        },
+        /*{
+            id: "coin-flip",
+            name: "灵动抛币器",
+            description: "模拟抛硬币，支持连续抛掷统计，正反概率可视化，极简动态。",
+            icon: "🪙",
+            path: "#",
+            status: "coming",
+            tag: "即将上线"
+        },
+        {
+            id: "dice-roll",
+            name: "多面骰子工坊",
+            description: "自定义骰子面数，同时掷多枚骰子，总和与分布一目了然。",
+            icon: "🎲",
+            path: "#",
+            status: "coming",
+            tag: "即将上线"
+        },
+        {
+            id: "lottery-wheel",
+            name: "幸运轮盘抽选",
+            description: "自定义奖品列表，转盘式随机抽选，适合活动与决策。",
+            icon: "🎡",
+            path: "#",
+            status: "coming",
+            tag: "即将上线"
+        },
+        {
+            id: "password-gen",
+            name: "密码生成器",
+            description: "生成强密码，可自定义长度与字符类型，一键复制。",
+            icon: "🔐",
+            path: "#",
+            status: "coming",
+            tag: "即将上线"
+        },*/
+        {
+            id: "color-palette",
+            name: "灵感色板",
+            description: "随机/定制配色方案，提取色彩值，设计师小助手。",
+            icon: "🎨",
+            path: "#",
+            status: "coming",
+            tag: "即将上线"
+        }
+    ];
+
+    // 更新工具数量显示
+    function updateToolBadge() {
+        const activeTools = toolsList.filter(t => t.status === 'active').length;
+        const totalTools = toolsList.length;
+        const badgeElem = document.getElementById('toolCountBadge');
+        if (badgeElem) {
+            badgeElem.innerText = `${activeTools} / ${totalTools} 工具可用`;
+        }
+    }
+
+    // 处理工具卡片点击跳转
+    function handleToolClick(tool, event) {
+        // 防止冒泡
+        if (event) event.stopPropagation();
+        if (tool.status === 'active' && tool.path && tool.path !== '#') {
+            // 执行跳转: 在当前标签页打开新页面（或根据需求 _self）
+            window.location.href = tool.path;
+        } else if (tool.status === 'coming') {
+            // 弹出友好的toast提示
+            showFloatingMessage(`✨ “${tool.name}” 即将开放，敬请期待～`, false);
+        } else {
+            showFloatingMessage(`⚠️ 工具路径未配置，请检查配置`, true);
+        }
+    }
+
+    // 优雅的浮动消息 (与之前风格一致)
+    function showFloatingMessage(msg, isError = false) {
+        const toast = document.createElement('div');
+        toast.innerText = msg;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '30px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.backgroundColor = isError ? '#c0392b' : '#2c6e2f';
+        toast.style.color = 'white';
+        toast.style.padding = '0.7rem 1.5rem';
+        toast.style.borderRadius = '3rem';
+        toast.style.fontSize = '0.85rem';
+        toast.style.fontWeight = '500';
+        toast.style.zIndex = '1000';
+        toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+        toast.style.backdropFilter = 'blur(8px)';
+        toast.style.fontFamily = 'system-ui, sans-serif';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 2100);
+        }, 2000);
+    }
+
+    // 渲染工具网格
+    function renderToolsGrid() {
+        const gridContainer = document.getElementById('toolsGrid');
+        if (!gridContainer) return;
+
+        gridContainer.innerHTML = '';
+        toolsList.forEach(tool => {
+            const card = document.createElement('div');
+            card.className = `tool-card ${tool.status === 'coming' ? 'coming-soon' : ''}`;
+            // 添加点击事件
+            card.addEventListener('click', (e) => handleToolClick(tool, e));
+
+            // 内部结构
+            const iconSpan = document.createElement('div');
+            iconSpan.className = 'tool-icon';
+            iconSpan.textContent = tool.icon;
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'tool-title';
+            titleDiv.innerHTML = `${tool.name} ${tool.status === 'coming' ? '<span style="font-size:0.7rem; background:#eef2f7; padding:0.1rem 0.6rem; border-radius:40px; color:#7f8c8d;">⌛</span>' : ''}`;
+
+            const descPara = document.createElement('div');
+            descPara.className = 'tool-desc';
+            descPara.textContent = tool.description;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'tool-meta';
+            const tagSpan = document.createElement('span');
+            tagSpan.textContent = tool.tag;
+            const launchSpan = document.createElement('span');
+            launchSpan.className = 'launch-badge';
+            launchSpan.textContent = tool.status === 'active' ? '立即体验 →' : '敬请期待';
+
+            metaDiv.appendChild(tagSpan);
+            metaDiv.appendChild(launchSpan);
+
+            card.appendChild(iconSpan);
+            card.appendChild(titleDiv);
+            card.appendChild(descPara);
+            card.appendChild(metaDiv);
+
+            gridContainer.appendChild(card);
+        });
+    }
+
+    // 额外检测随机发生器页面是否存在？为了更友好的体验，我们检测路径可用性(可选)
+    // 由于前端无法准确探测静态文件是否存在，但是我们可以添加一个预检提示？但不需要复杂，点击自然反应。
+    // 为了增加演示真实感，在控制台不报错即可。同时我们模拟一个真实跳转环境：
+    // 注意：当用户点击“数字骰池”时，需要确保 random-pool.html 存在。为了让演示更完善，我们可以提供生成内嵌说明或者使用blob?
+    // 但是根据要求，首页跳转到这个页面，路径为首页下面一个文件夹下的文件，例如 /tools/random-pool.html
+    // 所以此处可以在配置里修改为 "./tools/random-pool.html" 表示首页同级的tools文件夹内的文件。
+    // 根据题意: “这个的路径就是首页下面一个文件夹下的文件”，所以假设首页在根目录，则随机数生成器页面位于 ./digit-pool/random.html 或 ./tools/random-pool.html
+    // 为了符合真实场景，我们在toolsList里将第一个工具的path修改为 "./tools/random-pool.html" 或可配置。
+    // 为了展示最佳实践，同时为了让用户了解结构，我们在卡片下方加一段友好说明（提示将原页面放置于特定目录）。
+    // 但核心设计已经完整，为了让用户真正实现跳转，我们通过环境变量或提示告诉开发者存放路径。
+    // 此外，我们可以加一个工具说明模块： 如果页面不存在，则展示备选。
+    // 为增强交互，在点击跳转前可以给出一个温馨提示，但为了简洁，直接跳转。
+
+    // 由于完全按照需求展示风格，并且首页需要美观，同时提供真正的跳转逻辑。
+    // 扩展一点：生成一个简单的目录结构模拟提醒，确保开发者知道把之前的随机数生成器保存到正确路径。
+    function addEnvironmentHint() {
+        // 在footer位置增加提示（轻量）
+        const footer = document.querySelector('.footer-note');
+        if (footer) {
+            const hintSpan = document.createElement('div');
+            hintSpan.style.marginTop = '0.6rem';
+            hintSpan.style.fontSize = '0.68rem';
+            hintSpan.style.opacity = '0.7';
+            hintSpan.innerHTML = `📁 提示：将「数字骰池」页面保存为 <code style="background:#eef2f5; padding:0.1rem 0.3rem; border-radius:8px;">./tools/random-pool.html</code> 或修改首页配置中的路径即可正常跳转。`;
+            footer.appendChild(hintSpan);
+        }
+    }
+
+    // 初始化页面
+    function initHome() {
+        renderToolsGrid();
+        updateToolBadge();
+        // addEnvironmentHint();
+        // 添加一些微动效和背景适应
+        const style = document.createElement('style');
+        style.textContent = `
+            code {
+                font-family: monospace;
+                background: #eef2f7;
+                padding: 0.1rem 0.3rem;
+                border-radius: 8px;
+                color: #1f6392;
+            }
+            .tool-card {
+                cursor: pointer;
+            }
+            .tool-card.coming-soon {
+                cursor: default;
+                opacity: 0.85;
+            }
+            .tool-card.coming-soon .launch-badge {
+                background: #b7cfdf;
+                color: #2c4e6e;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 如果url hash包含调试参数可忽略
+        console.log('灵动工具箱已启动，工具卡片支持跳转与即将上线状态');
+    }
+
+    // 页面加载运行
+    window.addEventListener('DOMContentLoaded', initHome);
+</script>
+</body>
+</html>

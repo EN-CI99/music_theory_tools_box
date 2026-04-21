@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>88键钢琴 | 标准符号标注 · 先符号后字母</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #1a2430 0%, #0e141c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, 'Segoe UI', 'SF Pro Text', 'Inter', -apple-system, sans-serif;
+      padding: 1rem;
+    }
+
+    .piano-container {
+      max-width: 100%;
+      width: 100%;
+      background: rgba(30, 35, 45, 0.7);
+      backdrop-filter: blur(4px);
+      border-radius: 2rem;
+      padding: 1.5rem 1.2rem 1.5rem 1.2rem;
+      box-shadow: 0 30px 40px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .piano-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      color: #ececec;
+      padding: 0 0.3rem;
+    }
+    .title-section h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .title-section h1::before {
+      content: "🎹";
+      font-size: 1.7rem;
+    }
+    .sub {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
+    .notation-badge {
+      background: #2a3845;
+      padding: 0.3rem 0.9rem;
+      border-radius: 3rem;
+      font-size: 0.65rem;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    /* 符号图例 */
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      background: #1e2a32aa;
+      border-radius: 2rem;
+      backdrop-filter: blur(4px);
+      font-size: 0.7rem;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #d4e6f5;
+    }
+    .legend-symbol {
+      font-size: 1rem;
+      font-weight: bold;
+      background: #2a3a44;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.5rem;
+    }
+    .legend-desc {
+      font-size: 0.65rem;
+      opacity: 0.9;
+    }
+
+    .keyboard-scroll {
+      overflow-x: auto;
+      overflow-y: visible;
+      border-radius: 1rem;
+      position: relative;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: #4a627a #1e2a32;
+    }
+    .keyboard-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .keyboard-scroll::-webkit-scrollbar-track {
+      background: #1e2a32;
+      border-radius: 10px;
+    }
+    .keyboard-scroll::-webkit-scrollbar-thumb {
+      background: #4a627a;
+      border-radius: 10px;
+    }
+
+    .keyboard {
+      position: relative;
+      display: flex;
+      margin: 0.5rem 0 0.8rem 0;
+      border-radius: 1rem;
+      background: #0a0c10;
+      padding: 0.6rem 0.4rem 0.4rem 0.4rem;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 20px rgba(0,0,0,0.3);
+      min-width: max-content;
+    }
+
+    .white-keys {
+      display: flex;
+      background: transparent;
+      position: relative;
+      z-index: 1;
+    }
+
+    .white-key {
+      background: linear-gradient(145deg, #fefefe, #f5f7fa);
+      border-radius: 0 0 8px 8px;
+      height: 300px;
+      cursor: pointer;
+      transition: all 0.04s linear;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 8px;
+      font-weight: 700;
+      border: 1px solid #d1dce6;
+      border-top: none;
+      position: relative;
+      width: 56px;
+      min-width: 52px;
+    }
+    .white-key.active {
+      background: linear-gradient(145deg, #e0e8f0, #d0dbe8);
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .white-key .note-main {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #2c3e4e;
+      margin-bottom: 4px;
+    }
+    .white-key .enharmonic-line {
+      font-size: 0.52rem;
+      opacity: 0.7;
+      font-family: monospace;
+      text-align: center;
+      line-height: 1.3;
+      margin-top: 1px;
+      letter-spacing: 0.3px;
+    }
+    .white-key .group-name {
+      font-size: 0.5rem;
+      opacity: 0.55;
+      margin-top: 4px;
+      font-family: monospace;
+      background: rgba(0,0,0,0.05);
+      padding: 1px 5px;
+      border-radius: 10px;
+    }
+    .white-key .shortcut {
+      font-size: 0.48rem;
+      opacity: 0.4;
+      margin-top: 3px;
+    }
+
+    .black-keys {
+      position: absolute;
+      top: 0.6rem;
+      left: 0.4rem;
+      right: 0.4rem;
+      height: 175px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .black-key {
+      position: absolute;
+      pointer-events: auto;
+      background: linear-gradient(145deg, #2c2f36, #1a1c22);
+      border-radius: 0 0 6px 6px;
+      height: 170px;
+      cursor: pointer;
+      transition: all 0.04s linear;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 8px;
+      font-weight: 600;
+      color: #ffefc0;
+      text-shadow: 0 1px 1px black;
+      border: 1px solid #2b2f36;
+      border-top: none;
+      z-index: 25;
+    }
+    .black-key.active {
+      background: linear-gradient(145deg, #1f2229, #101218);
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .black-key .note-main {
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .black-key .enharmonic-line {
+      font-size: 0.48rem;
+      opacity: 0.85;
+      font-family: monospace;
+      text-align: center;
+      line-height: 1.25;
+      margin-top: 1px;
+    }
+    .black-key .group-name {
+      font-size: 0.44rem;
+      opacity: 0.75;
+      margin-top: 3px;
+      background: rgba(0,0,0,0.35);
+      padding: 1px 4px;
+      border-radius: 8px;
+    }
+    .black-key .shortcut {
+      font-size: 0.42rem;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin: 0.8rem 0 0.6rem;
+    }
+    .btn {
+      background: #2e3b44;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 2.5rem;
+      font-weight: 600;
+      font-size: 0.72rem;
+      color: #f0f3f8;
+      cursor: pointer;
+      transition: 0.15s;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-primary {
+      background: #3b6e8b;
+      color: white;
+      box-shadow: 0 2px 8px rgba(59,110,139,0.3);
+    }
+    .btn-primary:hover {
+      background: #2c5a74;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #2c3e4e;
+      border: 1px solid #4a627a;
+    }
+    .btn-secondary:hover {
+      background: #1f3241;
+    }
+    .btn-accent {
+      background: #5a3e2b;
+      border: 1px solid #8b6946;
+    }
+    .btn-accent:hover {
+      background: #6e4d34;
+    }
+    .btn-notation {
+      background: #2d5a5a;
+      border: 1px solid #4f8a8a;
+    }
+    .btn-notation.active-mode {
+      background: #3b8b8b;
+      box-shadow: 0 0 6px rgba(59,139,139,0.5);
+      border-color: #7fcaca;
+    }
+    .note-display {
+      background: #0c0f14cc;
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1rem;
+      border-radius: 2.5rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #ffde9c;
+    }
+
+    .footer-help {
+      text-align: center;
+      font-size: 0.6rem;
+      color: #7f8d9c;
+      margin-top: 0.8rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    kbd {
+      background: #1e2a32;
+      border-radius: 5px;
+      padding: 0.1rem 0.4rem;
+      font-family: monospace;
+      font-weight: bold;
+      color: #e6e9f0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 0 black;
+      margin: 0 2px;
+      font-size: 0.6rem;
+    }
+
+    @media (max-width: 1050px) {
+      .white-key { width: 50px; min-width: 48px; height: 280px; }
+      .black-key { height: 158px; }
+      .white-key .note-main { font-size: 0.78rem; }
+      .white-key .enharmonic-line { font-size: 0.48rem; }
+    }
+    @media (max-width: 900px) {
+      .white-key { width: 44px; min-width: 42px; height: 260px; }
+      .black-key { height: 148px; }
+      .white-key .note-main { font-size: 0.72rem; }
+      .white-key .enharmonic-line { font-size: 0.45rem; }
+      .black-key .note-main { font-size: 0.62rem; }
+    }
+    @media (max-width: 750px) {
+      .white-key { width: 38px; min-width: 36px; height: 230px; }
+      .black-key { height: 130px; }
+      .white-key .enharmonic-line { font-size: 0.42rem; }
+      .black-key .enharmonic-line { font-size: 0.42rem; }
+    }
+    @media (max-width: 650px) {
+      .white-key { width: 34px; min-width: 32px; height: 200px; padding-bottom: 5px; }
+      .black-key { height: 115px; }
+      .white-key .enharmonic-line { display: none; }
+      .black-key .enharmonic-line { display: none; }
+    }
+
+    .hide-names .note-main,
+    .hide-names .enharmonic-line {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="piano-container" id="pianoContainer">
+  <div class="piano-header">
+    <div class="title-section">
+      <h1>88键钢琴 · 标准符号标注</h1>
+      <div class="sub">先符号后字母 · 等音完整标注</div>
+    </div>
+    <div class="notation-badge" id="currentNotationBadge">📐 当前: 科学音高记法</div>
+  </div>
+
+  <!-- 符号图例 -->
+  <div class="legend-bar">
+    <div class="legend-item"><span class="legend-symbol">♯</span><span class="legend-desc">升号</span></div>
+    <div class="legend-item"><span class="legend-symbol">♭</span><span class="legend-desc">降号</span></div>
+    <div class="legend-item"><span class="legend-symbol">𝄪</span><span class="legend-desc">重升号</span></div>
+    <div class="legend-item"><span class="legend-symbol">𝄫</span><span class="legend-desc">重降号</span></div>
+    <div class="legend-item"><span class="legend-symbol">→</span><span class="legend-desc">等音示例: C = ♯B = 𝄫D</span></div>
+  </div>
+
+  <div class="keyboard-scroll" id="keyboardScroll">
+    <div class="keyboard" id="keyboardWrapper">
+      <div class="white-keys" id="whiteKeys"></div>
+      <div class="black-keys" id="blackKeys"></div>
+    </div>
+  </div>
+
+  <div class="control-bar">
+    <button class="btn btn-primary" id="playScaleBtn">🎼 演奏音阶 (C4→C5)</button>
+    <button class="btn btn-notation" id="toggleScientificBtn">🔬 科学记法</button>
+    <button class="btn btn-notation" id="toggleTraditionalBtn">📜 传统分组</button>
+    <button class="btn btn-accent" id="toggleNamesBtn">🏷️ 隐藏音名</button>
+    <button class="btn btn-secondary" id="resetActiveBtn">✨ 清除高亮</button>
+    <div class="note-display" id="lastNoteDisplay">🎵 等待演奏</div>
+  </div>
+  <div class="footer-help">
+    <span>🎹 88键全键盘 | 符号统一写在字母前面</span>
+    <span>📖 传统分组: 大字二组 ~ 小字五组</span>
+    <span>⌨️ 键盘映射: <kbd>Z</kbd>~<kbd>M</kbd> <kbd>Q</kbd>~<kbd>U</kbd> <kbd>S/D/G/H/J</kbd> 黑键</span>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ==================== 标准符号 ====================
+    const SHARP = '♯';
+    const FLAT = '♭';
+    const DOUBLE_SHARP = '𝄪';
+    const DOUBLE_FLAT = '𝄫';
+
+    // ==================== 88个音符数据，等音按规则生成 ====================
+    const totalKeys = 88;
+
+    function getFreq(semitonesFromA0) {
+      return 27.5 * Math.pow(2, semitonesFromA0 / 12);
+    }
+
+    function getTraditionalGroup(scientificName) {
+      const match = scientificName.match(/^([A-G]#?)(\d+)$/);
+      if (!match) return '';
+      const octave = parseInt(match[2]);
+      if (octave === 0) return "大字二组";
+      if (octave === 1) return "大字一组";
+      if (octave === 2) return "大字组";
+      if (octave === 3) return "小字组";
+      if (octave === 4) return "小字一组";
+      if (octave === 5) return "小字二组";
+      if (octave === 6) return "小字三组";
+      if (octave === 7) return "小字四组";
+      if (octave === 8) return "小字五组";
+      return "";
+    }
+
+    // 获取等音：严格按照图片规则
+    // 白键主名: C, D, E, F, G, A, B
+    // 黑键主名: ♯C, ♯D, ♯F, ♯G, ♯A (先符号后字母)
+    // 等音规则：
+    // C: ♯B, 𝄫D
+    // ♯C: 𝄪B, ♭D
+    // D: 𝄪C, 𝄫E
+    // ♯D: ♭E, 𝄫F
+    // E: 𝄪D, ♭F
+    // F: ♯E, 𝄫G
+    // ♯F: 𝄪E, ♭G
+    // G: 𝄪F, 𝄫A
+    // ♯G: ♭A  (只有两个)
+    // A: 𝄪G, 𝄫B
+    // ♯A: 𝄪G♯, ♭B
+    // B: 𝄪A, ♭C
+
+    function getEnharmonicInfo(baseName, octave) {
+      // 根据主音名（无八度）返回等音列表
+      const enhMap = {
+        'C': { sharp: `${SHARP}B`, flat: `${DOUBLE_FLAT}D`, count: 3 },
+        'C#': { sharp: `${DOUBLE_SHARP}B`, flat: `${FLAT}D`, count: 3 },
+        'D': { sharp: `${DOUBLE_SHARP}C`, flat: `${DOUBLE_FLAT}E`, count: 3 },
+        'D#': { sharp: null, flat: `${FLAT}E`, extra: `${DOUBLE_FLAT}F`, count: 3 },  // ♭E 和 𝄫F
+        'E': { sharp: `${DOUBLE_SHARP}D`, flat: `${FLAT}F`, count: 3 },
+        'F': { sharp: `${SHARP}E`, flat: `${DOUBLE_FLAT}G`, count: 3 },
+        'F#': { sharp: `${DOUBLE_SHARP}E`, flat: `${FLAT}G`, count: 3 },
+        'G': { sharp: `${DOUBLE_SHARP}F`, flat: `${DOUBLE_FLAT}A`, count: 3 },
+        'G#': { sharp: null, flat: `${FLAT}A`, count: 2 },  // 只有两个
+        'A': { sharp: `${DOUBLE_SHARP}G`, flat: `${DOUBLE_FLAT}B`, count: 3 },
+        'A#': { sharp: `${DOUBLE_SHARP}${SHARP}G`, flat: `${FLAT}B`, count: 3 }, // 𝄪G♯
+        'B': { sharp: `${DOUBLE_SHARP}A`, flat: `${FLAT}C`, count: 3 }
+      };
+
+      let key = baseName;
+      let data = enhMap[key];
+      if (!data) return { lines: [baseName], count: 1 };
+
+      let lines = [baseName];
+      if (data.sharp) lines.push(data.sharp);
+      if (data.flat) lines.push(data.flat);
+      if (data.extra) lines.push(data.extra);
+
+      return { lines: lines.slice(0, data.count), count: data.count };
+    }
+
+    // 获取主名显示（先符号后字母）
+    function getMainDisplay(rawName, octave) {
+      if (rawName === 'C') return `C${octave}`;
+      if (rawName === 'D') return `D${octave}`;
+      if (rawName === 'E') return `E${octave}`;
+      if (rawName === 'F') return `F${octave}`;
+      if (rawName === 'G') return `G${octave}`;
+      if (rawName === 'A') return `A${octave}`;
+      if (rawName === 'B') return `B${octave}`;
+      if (rawName === 'C#') return `${SHARP}C${octave}`;
+      if (rawName === 'D#') return `${SHARP}D${octave}`;
+      if (rawName === 'F#') return `${SHARP}F${octave}`;
+      if (rawName === 'G#') return `${SHARP}G${octave}`;
+      if (rawName === 'A#') return `${SHARP}A${octave}`;
+      return rawName + octave;
+    }
+
+    // 生成全部音符
+    const allNotes = [];
+    // 半音阶原始名称 (从A0开始)
+    const pitchClasses = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+
+    for (let semitone = 0; semitone < totalKeys; semitone++) {
+      let idx = semitone % 12;
+      let oct = Math.floor(semitone / 12);
+      let baseName = pitchClasses[idx];
+      let finalOct = oct;
+      if (baseName === 'C') finalOct = oct + 1;
+      else if (baseName === 'A' || baseName === 'A#') finalOct = oct;
+      else if (baseName === 'B') finalOct = oct;
+      else finalOct = oct + 1;
+      if (semitone === 2 && baseName === 'B') finalOct = 0;
+      if (semitone === 3 && baseName === 'C') finalOct = 1;
+      if (semitone === 0) finalOct = 0;
+
+      const isBlack = baseName.includes('#');
+      const mainDisplay = getMainDisplay(baseName, finalOct);
+      const enhInfo = getEnharmonicInfo(baseName, finalOct);
+
+      // 构建等音显示行（先符号后字母，不带八度数字）
+      let enhLines = [];
+      for (let i = 1; i < enhInfo.lines.length; i++) {
+        enhLines.push(enhInfo.lines[i]);
+      }
+
+      const freq = getFreq(semitone);
+      const traditionalGroup = getTraditionalGroup(mainDisplay);
+
+      allNotes.push({
+        semitone,
+        scientificName: mainDisplay,
+        displayMain: mainDisplay,
+        enhLines: enhLines,
+        freq: freq,
+        isBlack: isBlack,
+        octave: finalOct,
+        traditionalGroup: traditionalGroup,
+        rawName: baseName
+      });
+    }
+
+    const whiteNotesList = allNotes.filter(n => !n.isBlack);
+    const blackNotesList = allNotes.filter(n => n.isBlack);
+
+    let audioCtx = null;
+    let currentActiveWhite = null;
+    let currentActiveBlack = null;
+    let showNames = true;
+    let notationMode = 'scientific';
+
+    let whiteKeyElements = [];
+    let blackKeyElements = [];
+
+    function initAudio() {
+      if (audioCtx) return audioCtx;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playTone(frequency, duration = 0.5) {
+      if (!frequency) return;
+      try {
+        const ctx = initAudio();
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => actuallyPlay(ctx, frequency, duration)).catch(e=>console.warn);
+        } else {
+          actuallyPlay(ctx, frequency, duration);
+        }
+      } catch(e) { console.warn(e); }
+    }
+
+    function actuallyPlay(ctx, freq, duration) {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.value = 0.24;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + duration);
+      osc.stop(now + duration);
+      osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+    }
+
+    function playNote(note) {
+      if (note && note.freq) playTone(note.freq, 0.55);
+    }
+
+    function removeHighlights() {
+      if (currentActiveWhite) { currentActiveWhite.classList.remove('active'); currentActiveWhite = null; }
+      if (currentActiveBlack) { currentActiveBlack.classList.remove('active'); currentActiveBlack = null; }
+      document.querySelectorAll('.white-key.active, .black-key.active').forEach(el => el.classList.remove('active'));
+    }
+
+    function updateDisplayNote(note) {
+      const enhStr = note.enhLines.length > 0 ? note.enhLines.join(' / ') : '';
+      if (notationMode === 'scientific') {
+        lastNoteSpan.innerHTML = `🎵 ${note.scientificName} | 等音: ${enhStr} | ${note.traditionalGroup}`;
+      } else {
+        const shortGroup = note.traditionalGroup.replace('大字二组','大2').replace('大字一组','大1').replace('大字组','大字').replace('小字组','小子').replace('小字一组','小1').replace('小字二组','小2').replace('小字三组','小3').replace('小字四组','小4').replace('小字五组','小5');
+        lastNoteSpan.innerHTML = `🎵 ${note.displayMain} · ${shortGroup} | 等音: ${enhStr}`;
+      }
+    }
+
+    function getMainLabel(note) {
+      if (notationMode === 'scientific') {
+        return note.scientificName;
+      } else {
+        const groupShort = note.traditionalGroup
+                .replace('大字二组', '大2')
+                .replace('大字一组', '大1')
+                .replace('大字组', '大字')
+                .replace('小字组', '小子')
+                .replace('小字一组', '小1')
+                .replace('小字二组', '小2')
+                .replace('小字三组', '小3')
+                .replace('小字四组', '小4')
+                .replace('小字五组', '小5');
+        // 传统模式只显示音名+分组缩写
+        const pureNote = note.scientificName.replace(/[0-9]/g, '');
+        return `${pureNote}${groupShort}`;
+      }
+    }
+
+    function getGroupLabel(note) {
+      if (notationMode === 'scientific') {
+        return `${note.octave}`;
+      } else {
+        return note.traditionalGroup;
+      }
+    }
+
+    function getEnharmonicHtml(note) {
+      if (!showNames) return '';
+      let html = '';
+      for (let line of note.enhLines) {
+        html += `<div class="enharmonic-line">${line}</div>`;
+      }
+      return html;
+    }
+
+    function refreshAllLabels() {
+      for (let i = 0; i < whiteNotesList.length && i < whiteKeyElements.length; i++) {
+        const note = whiteNotesList[i];
+        const el = whiteKeyElements[i];
+        const mainLabel = getMainLabel(note);
+        const groupLabel = getGroupLabel(note);
+        const enhHtml = getEnharmonicHtml(note);
+        el.innerHTML = `
+                    <div class="note-main">${mainLabel}</div>
+                    ${enhHtml}
+                    <div class="group-name">${groupLabel}</div>
+                    <div class="shortcut">${getShortcutForNote(note)}</div>
+                `;
+      }
+      for (let i = 0; i < blackNotesList.length && i < blackKeyElements.length; i++) {
+        const note = blackNotesList[i];
+        const el = blackKeyElements[i];
+        const mainLabel = getMainLabel(note);
+        const groupLabel = getGroupLabel(note);
+        const enhHtml = getEnharmonicHtml(note);
+        el.innerHTML = `
+                    <div class="note-main">${mainLabel}</div>
+                    ${enhHtml}
+                    <div class="group-name">${groupLabel}</div>
+                    <div class="shortcut">${getShortcutForNote(note)}</div>
+                `;
+      }
+      const badge = document.getElementById('currentNotationBadge');
+      if (notationMode === 'scientific') {
+        badge.innerHTML = '📐 当前: 科学音高记法';
+      } else {
+        badge.innerHTML = '📜 当前: 传统分组法';
+      }
+      const sciBtn = document.getElementById('toggleScientificBtn');
+      const tradBtn = document.getElementById('toggleTraditionalBtn');
+      if (notationMode === 'scientific') {
+        sciBtn.classList.add('active-mode');
+        tradBtn.classList.remove('active-mode');
+      } else {
+        tradBtn.classList.add('active-mode');
+        sciBtn.classList.remove('active-mode');
+      }
+    }
+
+    function getShortcutForNote(note) {
+      const map = {
+        'C4': 'Z','D4': 'X','E4': 'C','F4': 'V','G4': 'B','A4': 'N','B4': 'M',
+        '♯C4': 'S','♯D4': 'D','♯F4': 'G','♯G4': 'H','♯A4': 'J',
+        'C5': 'Q','D5': 'W','E5': 'E','F5': 'R','G5': 'T','A5': 'Y','B5': 'U',
+        '♯C5': '2','♯D5': '3','♯F5': '5','♯G5': '6','♯A5': '7'
+      };
+      return map[note.scientificName] || '';
+    }
+
+    function buildWhiteKeys() {
+      const container = document.getElementById('whiteKeys');
+      container.innerHTML = '';
+      whiteKeyElements = [];
+      whiteNotesList.forEach((note, idx) => {
+        const key = document.createElement('div');
+        key.className = 'white-key';
+        key.setAttribute('data-note', note.scientificName);
+        key.setAttribute('data-freq', note.freq);
+        const mainLabel = getMainLabel(note);
+        const groupLabel = getGroupLabel(note);
+        const enhHtml = getEnharmonicHtml(note);
+        key.innerHTML = `
+                    <div class="note-main">${mainLabel}</div>
+                    ${enhHtml}
+                    <div class="group-name">${groupLabel}</div>
+                    <div class="shortcut">${getShortcutForNote(note)}</div>
+                `;
+        key.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeHighlights();
+          key.classList.add('active');
+          currentActiveWhite = key;
+          playNote(note);
+          updateDisplayNote(note);
+          if (navigator.vibrate) navigator.vibrate(12);
+        });
+        container.appendChild(key);
+        whiteKeyElements.push(key);
+      });
+    }
+
+    function buildBlackKeys() {
+      if (whiteKeyElements.length === 0) return;
+      const blackContainer = document.getElementById('blackKeys');
+      blackContainer.innerHTML = '';
+      blackKeyElements = [];
+      const whiteContainerRect = document.querySelector('.white-keys').getBoundingClientRect();
+      const whiteRects = [];
+      whiteKeyElements.forEach(key => {
+        const rect = key.getBoundingClientRect();
+        whiteRects.push({
+          left: rect.left - whiteContainerRect.left,
+          right: rect.right - whiteContainerRect.left,
+          width: rect.width
+        });
+      });
+
+      blackNotesList.forEach((note, idx) => {
+        let beforeIdx = -1;
+        for (let i = 0; i < whiteNotesList.length - 1; i++) {
+          const currentWhite = whiteNotesList[i];
+          const nextWhite = whiteNotesList[i+1];
+          if (note.freq > currentWhite.freq && note.freq < nextWhite.freq) {
+            beforeIdx = i;
+            break;
+          }
+        }
+        if (beforeIdx === -1 || beforeIdx >= whiteRects.length - 1) return;
+
+        const leftWhiteRight = whiteRects[beforeIdx].right;
+        const rightWhiteLeft = whiteRects[beforeIdx + 1].left;
+        const gapCenter = (leftWhiteRight + rightWhiteLeft) / 2;
+        let blackWidth = whiteRects[beforeIdx].width * 0.62;
+        const maxWidth = (rightWhiteLeft - leftWhiteRight) * 0.88;
+        if (blackWidth > maxWidth) blackWidth = maxWidth;
+        if (blackWidth < 32) blackWidth = 34;
+        const blackLeft = gapCenter - (blackWidth / 2);
+
+        const blackKey = document.createElement('div');
+        blackKey.className = 'black-key';
+        blackKey.setAttribute('data-note', note.scientificName);
+        blackKey.setAttribute('data-freq', note.freq);
+        blackKey.style.width = `${blackWidth}px`;
+        blackKey.style.left = `${blackLeft}px`;
+        const mainLabel = getMainLabel(note);
+        const groupLabel = getGroupLabel(note);
+        const enhHtml = getEnharmonicHtml(note);
+        blackKey.innerHTML = `
+                    <div class="note-main">${mainLabel}</div>
+                    ${enhHtml}
+                    <div class="group-name">${groupLabel}</div>
+                    <div class="shortcut">${getShortcutForNote(note)}</div>
+                `;
+        blackKey.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeHighlights();
+          blackKey.classList.add('active');
+          currentActiveBlack = blackKey;
+          playNote(note);
+          updateDisplayNote(note);
+          if (navigator.vibrate) navigator.vibrate(12);
+        });
+        blackContainer.appendChild(blackKey);
+        blackKeyElements.push(blackKey);
+      });
+    }
+
+    function repositionBlackKeys() {
+      if (whiteKeyElements.length === 0 || blackKeyElements.length === 0) return;
+      const whiteContainerRect = document.querySelector('.white-keys').getBoundingClientRect();
+      const whiteRects = [];
+      whiteKeyElements.forEach(key => {
+        const rect = key.getBoundingClientRect();
+        whiteRects.push({
+          left: rect.left - whiteContainerRect.left,
+          right: rect.right - whiteContainerRect.left,
+          width: rect.width
+        });
+      });
+      let blackIdx = 0;
+      for (let i = 0; i < blackNotesList.length && blackIdx < blackKeyElements.length; i++) {
+        const note = blackNotesList[i];
+        let beforeIdx = -1;
+        for (let j = 0; j < whiteNotesList.length - 1; j++) {
+          const currentWhite = whiteNotesList[j];
+          const nextWhite = whiteNotesList[j+1];
+          if (note.freq > currentWhite.freq && note.freq < nextWhite.freq) {
+            beforeIdx = j;
+            break;
+          }
+        }
+        if (beforeIdx === -1 || beforeIdx >= whiteRects.length - 1) continue;
+        const leftWhiteRight = whiteRects[beforeIdx].right;
+        const rightWhiteLeft = whiteRects[beforeIdx + 1].left;
+        const gapCenter = (leftWhiteRight + rightWhiteLeft) / 2;
+        let blackWidth = whiteRects[beforeIdx].width * 0.62;
+        const maxWidth = (rightWhiteLeft - leftWhiteRight) * 0.88;
+        if (blackWidth > maxWidth) blackWidth = maxWidth;
+        if (blackWidth < 32) blackWidth = 34;
+        const blackLeft = gapCenter - (blackWidth / 2);
+        const blackKey = blackKeyElements[blackIdx];
+        blackKey.style.width = `${blackWidth}px`;
+        blackKey.style.left = `${blackLeft}px`;
+        const mainLabel = getMainLabel(note);
+        const groupLabel = getGroupLabel(note);
+        const enhHtml = getEnharmonicHtml(note);
+        blackKey.innerHTML = `
+                    <div class="note-main">${mainLabel}</div>
+                    ${enhHtml}
+                    <div class="group-name">${groupLabel}</div>
+                    <div class="shortcut">${getShortcutForNote(note)}</div>
+                `;
+        blackIdx++;
+      }
+    }
+
+    function toggleNames() {
+      showNames = !showNames;
+      const container = document.getElementById('pianoContainer');
+      if (showNames) {
+        container.classList.remove('hide-names');
+        toggleNamesBtn.innerHTML = '🏷️ 隐藏音名';
+      } else {
+        container.classList.add('hide-names');
+        toggleNamesBtn.innerHTML = '🏷️ 显示音名';
+      }
+      refreshAllLabels();
+    }
+
+    function setScientificMode() { if (notationMode === 'scientific') return; notationMode = 'scientific'; refreshAllLabels(); }
+    function setTraditionalMode() { if (notationMode === 'traditional') return; notationMode = 'traditional'; refreshAllLabels(); }
+
+    const keyToNoteMap = {
+      'KeyZ': 'C4', 'KeyX': 'D4', 'KeyC': 'E4', 'KeyV': 'F4', 'KeyB': 'G4', 'KeyN': 'A4', 'KeyM': 'B4',
+      'KeyQ': 'C5', 'KeyW': 'D5', 'KeyE': 'E5', 'KeyR': 'F5', 'KeyT': 'G5', 'KeyY': 'A5', 'KeyU': 'B5',
+      'KeyA': 'C3', 'KeyS': '♯C4', 'KeyD': '♯D4', 'KeyF': 'F3', 'KeyG': '♯F4', 'KeyH': '♯G4', 'KeyJ': '♯A4',
+      'Digit2': '♯C5', 'Digit3': '♯D5', 'Digit5': '♯F5', 'Digit6': '♯G5', 'Digit7': '♯A5',
+      'KeyK': 'C6', 'KeyL': 'D6', 'KeyO': 'E6', 'KeyP': 'F6'
+    };
+
+    function getNoteByScientific(sciName) {
+      return allNotes.find(n => n.scientificName === sciName);
+    }
+
+    function handleKeyDown(e) {
+      const code = e.code;
+      if (e.repeat) return;
+      const targetNoteName = keyToNoteMap[code];
+      if (targetNoteName) {
+        e.preventDefault();
+        const note = getNoteByScientific(targetNoteName);
+        if (!note) return;
+        removeHighlights();
+        if (!note.isBlack) {
+          const idx = whiteNotesList.findIndex(n => n.scientificName === note.scientificName);
+          if (idx !== -1 && whiteKeyElements[idx]) {
+            whiteKeyElements[idx].classList.add('active');
+            currentActiveWhite = whiteKeyElements[idx];
+          }
+        } else {
+          const idx = blackNotesList.findIndex(n => n.scientificName === note.scientificName);
+          if (idx !== -1 && blackKeyElements[idx]) {
+            blackKeyElements[idx].classList.add('active');
+            currentActiveBlack = blackKeyElements[idx];
+          }
+        }
+        playNote(note);
+        updateDisplayNote(note);
+        if (navigator.vibrate) navigator.vibrate(12);
+      }
+    }
+
+    function handleKeyUp(e) {
+      const code = e.code;
+      const targetNoteName = keyToNoteMap[code];
+      if (targetNoteName) {
+        const note = getNoteByScientific(targetNoteName);
+        if (!note) return;
+        if (!note.isBlack) {
+          const idx = whiteNotesList.findIndex(n => n.scientificName === note.scientificName);
+          if (idx !== -1 && whiteKeyElements[idx]) whiteKeyElements[idx].classList.remove('active');
+        } else {
+          const idx = blackNotesList.findIndex(n => n.scientificName === note.scientificName);
+          if (idx !== -1 && blackKeyElements[idx]) blackKeyElements[idx].classList.remove('active');
+        }
+        e.preventDefault();
+      }
+    }
+
+    function playScale() {
+      const scaleNames = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+      let delay = 0;
+      scaleNames.forEach((name, i) => {
+        setTimeout(() => {
+          const note = getNoteByScientific(name);
+          if (note) {
+            playNote(note);
+            const idx = whiteNotesList.findIndex(n => n.scientificName === name);
+            if (idx !== -1 && whiteKeyElements[idx]) {
+              removeHighlights();
+              whiteKeyElements[idx].classList.add('active');
+              currentActiveWhite = whiteKeyElements[idx];
+              updateDisplayNote(note);
+              setTimeout(() => {
+                if (currentActiveWhite === whiteKeyElements[idx]) whiteKeyElements[idx].classList.remove('active');
+              }, 350);
+            }
+          }
+        }, delay);
+        delay += 380;
+      });
+      setTimeout(() => {
+        removeHighlights();
+        lastNoteSpan.innerHTML = "🎵 C大调音阶演奏完毕 (C4→C5)";
+      }, delay+100);
+    }
+
+    function resetHighlights() { removeHighlights(); lastNoteSpan.innerHTML = "🎵 高亮已清除"; }
+
+    let resizeTimer;
+    function handleResize() { if (resizeTimer) clearTimeout(resizeTimer); resizeTimer = setTimeout(() => repositionBlackKeys(), 120); }
+
+    function init() {
+      buildWhiteKeys();
+      buildBlackKeys();
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      document.getElementById('playScaleBtn').addEventListener('click', playScale);
+      document.getElementById('resetActiveBtn').addEventListener('click', resetHighlights);
+      const toggleNamesBtn = document.getElementById('toggleNamesBtn');
+      toggleNamesBtn.addEventListener('click', toggleNames);
+      document.getElementById('toggleScientificBtn').addEventListener('click', setScientificMode);
+      document.getElementById('toggleTraditionalBtn').addEventListener('click', setTraditionalMode);
+      const activateAudio = () => {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        document.removeEventListener('click', activateAudio);
+        document.removeEventListener('touchstart', activateAudio);
+      };
+      document.addEventListener('click', activateAudio);
+      document.addEventListener('touchstart', activateAudio);
+      setTimeout(() => {
+        const scrollDiv = document.getElementById('keyboardScroll');
+        const c4Key = document.querySelector('.white-key[data-note="C4"]');
+        if (c4Key && scrollDiv) scrollDiv.scrollLeft = Math.max(0, c4Key.offsetLeft - scrollDiv.clientWidth/2 + 50);
+      }, 120);
+    }
+
+    const lastNoteSpan = document.getElementById('lastNoteDisplay');
+    const toggleNamesBtn = document.getElementById('toggleNamesBtn');
+    init();
+  })();
+</script>
+</body>
+</html>
