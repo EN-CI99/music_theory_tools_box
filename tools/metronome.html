@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>精准节拍器 | 音乐练习好帮手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a2430 0%, #0e141c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .metronome-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(30, 35, 45, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 30px 40px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .metronome-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #ececec;
+        }
+
+        .metronome-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metronome-header h1::before {
+            content: "⏰";
+            font-size: 2rem;
+        }
+
+        .metronome-header .sub {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .bpm-control {
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #d4e6f5;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .bpm-display {
+            background: #2a3845;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .bpm-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .bpm-label {
+            font-size: 0.8rem;
+            color: #a8c0d6;
+            margin-top: 0.2rem;
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 0 0.5rem;
+        }
+
+        .bpm-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 10px;
+            background: #1e2a32;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .bpm-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3b6e8b;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(59,110,139,0.3);
+        }
+
+        .bpm-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3b6e8b;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(59,110,139,0.3);
+        }
+
+        .bpm-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #7f8d9c;
+            margin-top: 0.5rem;
+        }
+
+        .beat-control {
+            margin-bottom: 2rem;
+        }
+
+        .beat-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .beat-option {
+            background: #2a3845;
+            border: 1px solid #4a627a;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #d4e6f5;
+        }
+
+        .beat-option:hover {
+            background: #3b4c5a;
+            border-color: #5a7c9a;
+            transform: translateY(-2px);
+        }
+
+        .beat-option.active {
+            background: #3b6e8b;
+            border-color: #3b6e8b;
+            box-shadow: 0 2px 8px rgba(59,110,139,0.3);
+        }
+
+        .beat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .beat-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .sound-control {
+            margin-bottom: 2rem;
+        }
+
+        .sound-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .sound-option {
+            background: #2a3845;
+            border: 1px solid #4a627a;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #d4e6f5;
+        }
+
+        .sound-option:hover {
+            background: #3b4c5a;
+            border-color: #5a7c9a;
+            transform: translateY(-2px);
+        }
+
+        .sound-option.active {
+            background: #3b6e8b;
+            border-color: #3b6e8b;
+            box-shadow: 0 2px 8px rgba(59,110,139,0.3);
+        }
+
+        .sound-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .play-button {
+            width: 100%;
+            background: linear-gradient(135deg, #3b6e8b 0%, #2c5a74 100%);
+            border: none;
+            border-radius: 2rem;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59,110,139,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59,110,139,0.5);
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        .play-button.playing {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            box-shadow: 0 4px 12px rgba(192,57,43,0.4);
+        }
+
+        .play-button.playing:hover {
+            box-shadow: 0 6px 16px rgba(192,57,43,0.5);
+        }
+
+        .beat-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 2rem 0;
+        }
+
+        .beat-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #1e2a32;
+            border: 1px solid #4a627a;
+            transition: all 0.1s ease;
+        }
+
+        .beat-light.active {
+            background: #3b6e8b;
+            box-shadow: 0 0 10px rgba(59,110,139,0.8);
+        }
+
+        .beat-light.emphasis {
+            background: #e74c3c;
+            box-shadow: 0 0 10px rgba(231,76,60,0.8);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7f8d9c;
+            border-top: 1px solid #2a3845;
+            padding-top: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .metronome-container {
+                padding: 1.5rem;
+            }
+
+            .bpm-value {
+                font-size: 2.5rem;
+            }
+
+            .beat-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sound-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="metronome-container">
+        <div class="metronome-header">
+            <h1>精准节拍器</h1>
+            <div class="sub">音乐练习的好帮手</div>
+        </div>
+
+        <div class="bpm-control control-group">
+            <div class="control-label">🎚️ 速度 (BPM)</div>
+            <div class="bpm-display">
+                <div class="bpm-value" id="bpmValue">120</div>
+                <div class="bpm-label">拍/分钟</div>
+            </div>
+            <div class="slider-container">
+                <input type="range" class="bpm-slider" id="bpmSlider" min="40" max="208" value="120" step="1">
+                <div class="bpm-range">
+                    <span>40</span>
+                    <span>80</span>
+                    <span>120</span>
+                    <span>160</span>
+                    <span>208</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="beat-control control-group">
+            <div class="control-label">🎵 节拍类型</div>
+            <div class="beat-options" id="beatOptions">
+                <div class="beat-option active" data-beat="4/4">
+                    <div class="beat-value">4/4</div>
+                    <div class="beat-label">常见节拍</div>
+                </div>
+                <div class="beat-option" data-beat="3/4">
+                    <div class="beat-value">3/4</div>
+                    <div class="beat-label">华尔兹</div>
+                </div>
+                <div class="beat-option" data-beat="2/4">
+                    <div class="beat-value">2/4</div>
+                    <div class="beat-label">进行曲</div>
+                </div>
+                <div class="beat-option" data-beat="6/8">
+                    <div class="beat-value">6/8</div>
+                    <div class="beat-label">摇摆</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sound-control control-group">
+            <div class="control-label">🔊 声音选择</div>
+            <div class="sound-options" id="soundOptions">
+                <div class="sound-option active" data-sound="click">
+                    <div class="sound-name">点击声</div>
+                </div>
+                <div class="sound-option" data-sound="beep">
+                    <div class="sound-name">蜂鸣</div>
+                </div>
+                <div class="sound-option" data-sound="triangle">
+                    <div class="sound-name">三角铁</div>
+                </div>
+                <div class="sound-option" data-sound="woodblock">
+                    <div class="sound-name">木鱼</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="beat-indicator" id="beatIndicator">
+            <div class="beat-light active"></div>
+            <div class="beat-light"></div>
+            <div class="beat-light"></div>
+            <div class="beat-light"></div>
+        </div>
+
+        <button class="play-button" id="playButton">
+            <span id="playIcon">▶️</span> 开始
+        </button>
+
+        <div class="footer-note">
+            💡 节拍器是音乐练习的重要工具，帮助你保持稳定的节奏<br>
+            🎯 建议从慢速开始练习，逐渐提高速度
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 全局变量
+            let audioCtx = null;
+            let isPlaying = false;
+            let currentBPM = 120;
+            let currentBeat = '4/4';
+            let currentSound = 'click';
+            let beatInterval = null;
+            let currentBeatCount = 0;
+            let totalBeats = 4;
+
+            // DOM 元素
+            const bpmSlider = document.getElementById('bpmSlider');
+            const bpmValue = document.getElementById('bpmValue');
+            const beatOptions = document.querySelectorAll('.beat-option');
+            const soundOptions = document.querySelectorAll('.sound-option');
+            const playButton = document.getElementById('playButton');
+            const playIcon = document.getElementById('playIcon');
+            const beatIndicator = document.getElementById('beatIndicator');
+
+            // 初始化音频上下文
+            function initAudio() {
+                if (audioCtx) return audioCtx;
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                return audioCtx;
+            }
+
+            // 播放节拍声音
+            function playSound(isDownbeat = false) {
+                if (!audioCtx) audioCtx = initAudio();
+                
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(() => actuallyPlaySound(isDownbeat));
+                } else {
+                    actuallyPlaySound(isDownbeat);
+                }
+            }
+
+            function actuallyPlaySound(isDownbeat) {
+                const ctx = audioCtx;
+                const now = ctx.currentTime;
+                
+                let frequency = isDownbeat ? 800 : 600;
+                let duration = isDownbeat ? 0.15 : 0.1;
+                
+                // 根据声音类型调整频率
+                switch (currentSound) {
+                    case 'beep':
+                        frequency = isDownbeat ? 1000 : 800;
+                        break;
+                    case 'triangle':
+                        frequency = isDownbeat ? 600 : 400;
+                        duration = isDownbeat ? 0.2 : 0.15;
+                        break;
+                    case 'woodblock':
+                        frequency = isDownbeat ? 500 : 400;
+                        duration = isDownbeat ? 0.12 : 0.08;
+                        break;
+                }
+                
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                // 根据声音类型调整波形
+                switch (currentSound) {
+                    case 'click':
+                        osc.type = 'square';
+                        break;
+                    case 'beep':
+                        osc.type = 'sine';
+                        break;
+                    case 'triangle':
+                        osc.type = 'triangle';
+                        break;
+                    case 'woodblock':
+                        osc.type = 'sawtooth';
+                        break;
+                }
+                
+                osc.frequency.value = frequency;
+                gain.gain.value = 0.3;
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, now + duration);
+                osc.stop(now + duration);
+                
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
+            }
+
+            // 更新节拍指示器
+            function updateBeatIndicator() {
+                const beatLights = beatIndicator.querySelectorAll('.beat-light');
+                
+                // 清空所有灯光
+                beatLights.forEach(light => {
+                    light.classList.remove('active', 'emphasis');
+                });
+                
+                // 激活当前节拍的灯光
+                if (currentBeatCount < beatLights.length) {
+                    if (currentBeatCount === 0) {
+                        beatLights[currentBeatCount].classList.add('emphasis');
+                    } else {
+                        beatLights[currentBeatCount].classList.add('active');
+                    }
+                }
+            }
+
+            // 计算节拍间隔
+            function calculateInterval(bpm) {
+                return 60000 / bpm; // 转换为毫秒
+            }
+
+            // 开始节拍器
+            function startMetronome() {
+                if (isPlaying) return;
+                
+                isPlaying = true;
+                playButton.classList.add('playing');
+                playIcon.textContent = '⏸️';
+                playButton.textContent = ' 暂停';
+                playButton.prepend(playIcon);
+                
+                currentBeatCount = 0;
+                
+                // 立即播放第一个节拍
+                playSound(true);
+                updateBeatIndicator();
+                currentBeatCount = 1;
+                
+                // 设置间隔
+                beatInterval = setInterval(() => {
+                    const isDownbeat = currentBeatCount === 0;
+                    playSound(isDownbeat);
+                    updateBeatIndicator();
+                    
+                    currentBeatCount = (currentBeatCount + 1) % totalBeats;
+                }, calculateInterval(currentBPM));
+            }
+
+            // 停止节拍器
+            function stopMetronome() {
+                if (!isPlaying) return;
+                
+                isPlaying = false;
+                playButton.classList.remove('playing');
+                playIcon.textContent = '▶️';
+                playButton.textContent = ' 开始';
+                playButton.prepend(playIcon);
+                
+                clearInterval(beatInterval);
+                beatInterval = null;
+                
+                // 清空节拍指示器
+                const beatLights = beatIndicator.querySelectorAll('.beat-light');
+                beatLights.forEach(light => {
+                    light.classList.remove('active', 'emphasis');
+                });
+            }
+
+            // 更新BPM
+            function updateBPM(value) {
+                currentBPM = parseInt(value);
+                bpmValue.textContent = currentBPM;
+                
+                if (isPlaying) {
+                    clearInterval(beatInterval);
+                    beatInterval = setInterval(() => {
+                        const isDownbeat = currentBeatCount === 0;
+                        playSound(isDownbeat);
+                        updateBeatIndicator();
+                        
+                        currentBeatCount = (currentBeatCount + 1) % totalBeats;
+                    }, calculateInterval(currentBPM));
+                }
+            }
+
+            // 更新节拍类型
+            function updateBeatType(beat) {
+                currentBeat = beat;
+                totalBeats = parseInt(beat.split('/')[0]);
+                
+                // 更新节拍指示器
+                beatIndicator.innerHTML = '';
+                for (let i = 0; i < totalBeats; i++) {
+                    const light = document.createElement('div');
+                    light.className = 'beat-light';
+                    if (i === 0) light.classList.add('active');
+                    beatIndicator.appendChild(light);
+                }
+                
+                // 重置节拍计数
+                currentBeatCount = 0;
+                if (isPlaying) {
+                    clearInterval(beatInterval);
+                    startMetronome();
+                }
+            }
+
+            // 更新声音类型
+            function updateSoundType(sound) {
+                currentSound = sound;
+            }
+
+            // 事件监听器
+            bpmSlider.addEventListener('input', function() {
+                updateBPM(this.value);
+            });
+
+            beatOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    beatOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    updateBeatType(this.dataset.beat);
+                });
+            });
+
+            soundOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    soundOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    updateSoundType(this.dataset.sound);
+                    // 播放一个示例声音
+                    playSound();
+                });
+            });
+
+            playButton.addEventListener('click', function() {
+                if (isPlaying) {
+                    stopMetronome();
+                } else {
+                    startMetronome();
+                }
+            });
+
+            // 初始化
+            function init() {
+                updateBeatType('4/4');
+                updateSoundType('click');
+                
+                // 激活音频上下文
+                const activateAudio = () => {
+                    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                    document.removeEventListener('click', activateAudio);
+                    document.removeEventListener('touchstart', activateAudio);
+                };
+                
+                document.addEventListener('click', activateAudio);
+                document.addEventListener('touchstart', activateAudio);
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
