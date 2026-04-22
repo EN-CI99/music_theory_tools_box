@@ -359,6 +359,74 @@
             font-size: 0.85rem;
         }
 
+        .grouped-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 0.2rem 0.1rem;
+        }
+
+        .memory-group {
+            background: linear-gradient(145deg, #f8fbff, #eef5fc);
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            border: 1px solid #d4e8f5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.75rem;
+            color: #5f7f9a;
+            font-weight: 600;
+        }
+
+        .group-number {
+            background: #3b6e8b;
+            color: white;
+            width: 1.8rem;
+            height: 1.8rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .group-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .grouped-digit {
+            background: linear-gradient(145deg, #ffffff, #f3f8fe);
+            border-radius: 1.5rem;
+            min-width: 2.2rem;
+            height: 2.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f4e6e;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 1px solid #e2edf6;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .grouped-digit.highlight {
+            background: linear-gradient(145deg, #fff9e6, #fff3d1);
+            border-color: #f0d468;
+            color: #d68910;
+        }
+
         .footer-note {
             margin-top: 1.2rem;
             font-size: 0.65rem;
@@ -434,6 +502,7 @@
             <button class="btn btn-primary" id="generateBtn">✨ 生成随机序列</button>
             <button class="btn btn-secondary" id="resetDefaultBtn">⟳ 重置默认 (n=3, x=30)</button>
             <button class="btn btn-toggle" id="toggleNoRepeatBtn">🚫 避免相邻重复 (关)</button>
+            <button class="btn btn-toggle" id="toggleGroupBtn">📦 分组显示 (关)</button>
         </div>
 
         <div class="stats" id="statsPanel">
@@ -455,7 +524,8 @@
         </div>
         <div class="footer-note">
             💡 算法逻辑: 每次从 {1,2,3,4,5,6,7} 中随机抽取 <strong>n</strong> 个不重复数字作为可用的数字池，然后从该池中独立随机抽取 <strong>x</strong> 次（可重复）生成最终序列。<br>
-            🚫 开启「避免相邻重复」后，相邻两个位置的数字不会相同（若池中只有1个数字则无法避免，会提示）。
+            🚫 开启「避免相邻重复」后，相邻两个位置的数字不会相同（若池中只有1个数字则无法避免，会提示）。<br>
+            📦 开启「分组显示」后，序列会按照池子大小分组展示，每组作为一个记忆点，方便记忆和练习。
         </div>
     </div>
 </div>
@@ -467,6 +537,9 @@
 
     // 避免相邻重复模式的开关状态
     let avoidAdjacentRepeat = false;
+    
+    // 分组显示模式的开关状态
+    let showGrouped = false;
 
     /**
      * 从 FULL_SET 中随机选出 n 个不重复的数字 (Fisher-Yates 洗牌取前n)
@@ -560,14 +633,13 @@
             return;
         }
 
-        const fragment = document.createDocumentFragment();
-        for (let num of sequence) {
-            const chip = document.createElement('div');
-            chip.className = 'digit-chip';
-            chip.textContent = num;
-            fragment.appendChild(chip);
+        // 根据分组模式选择渲染方式
+        if (showGrouped && pool && pool.length > 0) {
+            renderGroupedSequence(sequence, pool);
+        } else {
+            renderNormalSequence(sequence);
         }
-        digitsContainer.appendChild(fragment);
+
         sequenceLengthBadge.innerText = `长度: ${sequence.length}`;
 
         if (sequence.length > 0) {
@@ -594,13 +666,78 @@
             modeHint.style.color = '#5f7f9a';
             statsPanel.appendChild(modeHint);
         }
-        if (avoidRepeat && pool.length > 1) {
-            modeHint.innerHTML = '🚫 模式: 避免相邻重复已开启';
-        } else if (avoidRepeat && pool.length === 1) {
-            modeHint.innerHTML = '⚠️ 池子只有1个数字，无法避免相邻重复';
-        } else {
-            modeHint.innerHTML = '🎲 模式: 允许相邻重复';
+        
+        let modeText = '';
+        if (showGrouped) {
+            modeText = `📦 分组显示 (每组 ${pool.length} 个)`;
         }
+        if (avoidRepeat && pool.length > 1) {
+            modeText += ' | 🚫 避免相邻重复';
+        } else if (avoidRepeat && pool.length === 1) {
+            modeText += ' | ⚠️ 池子只有1个数字';
+        } else if (!showGrouped) {
+            modeText = '🎲 模式: 允许相邻重复';
+        }
+        modeHint.innerHTML = modeText;
+    }
+
+    // 渲染普通序列
+    function renderNormalSequence(sequence) {
+        digitsContainer.className = 'digits-grid';
+        const fragment = document.createDocumentFragment();
+        for (let num of sequence) {
+            const chip = document.createElement('div');
+            chip.className = 'digit-chip';
+            chip.textContent = num;
+            fragment.appendChild(chip);
+        }
+        digitsContainer.appendChild(fragment);
+    }
+
+    // 渲染分组序列
+    function renderGroupedSequence(sequence, pool) {
+        digitsContainer.className = 'grouped-container';
+        const groupSize = pool.length;
+        const fragment = document.createDocumentFragment();
+        
+        // 按照池子大小分组
+        for (let i = 0; i < sequence.length; i += groupSize) {
+            const group = sequence.slice(i, i + groupSize);
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'memory-group';
+            
+            // 组头
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'group-header';
+            const groupNum = Math.floor(i / groupSize) + 1;
+            headerDiv.innerHTML = `
+                <span class="group-number">${groupNum}</span>
+                <span>记忆点 ${groupNum} (${group.length} 个数字)</span>
+            `;
+            groupDiv.appendChild(headerDiv);
+            
+            // 组内容
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'group-content';
+            
+            for (let num of group) {
+                const digitSpan = document.createElement('span');
+                digitSpan.className = 'grouped-digit';
+                digitSpan.textContent = num;
+                
+                // 高亮池子中的数字
+                if (pool.includes(num)) {
+                    digitSpan.classList.add('highlight');
+                }
+                
+                contentDiv.appendChild(digitSpan);
+            }
+            
+            groupDiv.appendChild(contentDiv);
+            fragment.appendChild(groupDiv);
+        }
+        
+        digitsContainer.appendChild(fragment);
     }
 
     // 简洁toast提示
@@ -650,6 +787,30 @@
             toggleNoRepeatBtn.innerHTML = '🚫 避免相邻重复 (关)';
             toggleNoRepeatBtn.classList.remove('active');
         }
+    }
+
+    // 更新分组显示按钮的UI状态
+    function updateGroupButtonUI() {
+        const toggleGroupBtn = document.getElementById('toggleGroupBtn');
+        if (showGrouped) {
+            toggleGroupBtn.innerHTML = '✅ 分组显示 (开)';
+            toggleGroupBtn.classList.add('active');
+        } else {
+            toggleGroupBtn.innerHTML = '📦 分组显示 (关)';
+            toggleGroupBtn.classList.remove('active');
+        }
+    }
+
+    // 切换分组显示模式
+    function toggleGroupDisplay() {
+        showGrouped = !showGrouped;
+        updateGroupButtonUI();
+        if (showGrouped) {
+            showMessage('已开启「分组显示」模式，按池子大小分组显示', false);
+        } else {
+            showMessage('已关闭「分组显示」模式，恢复普通显示', false);
+        }
+        performGeneration();
     }
 
     // 核心生成+渲染
@@ -746,6 +907,7 @@
         if (!inputX.value || inputX.value === '') inputX.value = '30';
         highlightActiveQuickButton();
         updateToggleButtonUI();
+        updateGroupButtonUI();
         performGeneration();
 
         generateBtn.addEventListener('click', (e) => {
@@ -771,6 +933,15 @@
             e.preventDefault();
             toggleAvoidRepeat();
         });
+
+        // 绑定分组显示按钮
+        const toggleGroupBtn = document.getElementById('toggleGroupBtn');
+        if (toggleGroupBtn) {
+            toggleGroupBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleGroupDisplay();
+            });
+        }
 
         quickButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
