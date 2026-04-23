@@ -615,7 +615,7 @@
       if (notationMode === 'scientific') {
         lastNoteSpan.innerHTML = `🎵 ${note.scientificName} | 等音: ${enhStr} | ${note.traditionalGroup}`;
       } else {
-        const shortGroup = note.traditionalGroup.replace('大字二组','大2').replace('大字一组','大1').replace('大字组','大字').replace('小字组','小子').replace('小字一组','小1').replace('小字二组','小2').replace('小字三组','小3').replace('小字四组','小4').replace('小字五组','小5');
+        const shortGroup = note.traditionalGroup.replace('大字二组','大2').replace('大字一组','大1').replace('大字组','大字').replace('小字组','小字').replace('小字一组','小1').replace('小字二组','小2').replace('小字三组','小3').replace('小字四组','小4').replace('小字五组','小5');
         lastNoteSpan.innerHTML = `🎵 ${note.displayMain} · ${shortGroup} | 等音: ${enhStr}`;
       }
     }
@@ -628,7 +628,7 @@
                 .replace('大字二组', '大2')
                 .replace('大字一组', '大1')
                 .replace('大字组', '大字')
-                .replace('小字组', '小子')
+                .replace('小字组', '小字')
                 .replace('小字一组', '小1')
                 .replace('小字二组', '小2')
                 .replace('小字三组', '小3')
