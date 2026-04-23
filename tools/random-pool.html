@@ -363,15 +363,21 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            max-height: 280px;
+            max-height: 380px;
             overflow-y: auto;
             padding: 0.2rem 0.1rem;
         }
 
+        @media (max-width: 480px) {
+            .grouped-container {
+                max-height: 420px;
+            }
+        }
+
         .memory-group {
             background: linear-gradient(145deg, #f8fbff, #eef5fc);
-            border-radius: 1.2rem;
-            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            padding: 0.6rem 0.8rem;
             border: 1px solid #d4e8f5;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
@@ -379,9 +385,9 @@
         .group-header {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.6rem;
-            font-size: 0.75rem;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
             color: #5f7f9a;
             font-weight: 600;
         }
@@ -389,31 +395,31 @@
         .group-number {
             background: #3b6e8b;
             color: white;
-            width: 1.8rem;
-            height: 1.8rem;
+            width: 1.6rem;
+            height: 1.6rem;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 700;
         }
 
         .group-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .grouped-digit {
             background: linear-gradient(145deg, #ffffff, #f3f8fe);
-            border-radius: 1.5rem;
-            min-width: 2.2rem;
-            height: 2.2rem;
+            border-radius: 1.2rem;
+            min-width: 2rem;
+            height: 2rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: #1f4e6e;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
@@ -421,10 +427,59 @@
             font-family: 'SF Mono', 'Fira Code', monospace;
         }
 
+        @media (max-width: 480px) {
+            .memory-group {
+                padding: 0.5rem 0.7rem;
+            }
+            
+            .grouped-digit {
+                min-width: 1.8rem;
+                height: 1.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .group-content {
+                gap: 0.3rem;
+            }
+        }
+
         .grouped-digit.highlight {
             background: linear-gradient(145deg, #fff9e6, #fff3d1);
             border-color: #f0d468;
             color: #d68910;
+        }
+
+        .digit-selector {
+            display: flex;
+            gap: 0.4rem;
+            margin: 0.6rem 0;
+            flex-wrap: wrap;
+        }
+
+        .digit-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            border: 2px solid #d4e6f5;
+            background: #f8fbff;
+            color: #1f4e6e;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .digit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .digit-btn.active {
+            background: linear-gradient(135deg, #3b6e8b 0%, #2c5a74 100%);
+            color: white;
+            border-color: #3b6e8b;
+            box-shadow: 0 4px 8px rgba(59,110,139,0.3);
         }
 
         .footer-note {
@@ -485,6 +540,19 @@
                 </div>
                 <div class="range-hint">长度 ≥1 (建议 ≤200 保证体验)</div>
             </div>
+            <div class="input-group">
+                <label>🎰 可用数字</label>
+                <div class="digit-selector" id="digitSelector">
+                    <button class="digit-btn active" data-digit="1">1</button>
+                    <button class="digit-btn active" data-digit="2">2</button>
+                    <button class="digit-btn active" data-digit="3">3</button>
+                    <button class="digit-btn active" data-digit="4">4</button>
+                    <button class="digit-btn active" data-digit="5">5</button>
+                    <button class="digit-btn active" data-digit="6">6</button>
+                    <button class="digit-btn active" data-digit="7">7</button>
+                </div>
+                <div class="range-hint">默认全选，点击数字可切换是否包含</div>
+            </div>
         </div>
 
         <div class="quick-n-group">
@@ -523,9 +591,10 @@
             </div>
         </div>
         <div class="footer-note">
-            💡 算法逻辑: 每次从 {1,2,3,4,5,6,7} 中随机抽取 <strong>n</strong> 个不重复数字作为可用的数字池，然后从该池中独立随机抽取 <strong>x</strong> 次（可重复）生成最终序列。<br>
+            💡 算法逻辑: 每次从 <strong>用户选择的数字</strong> 中随机抽取 <strong>n</strong> 个不重复数字作为可用的数字池，然后从该池中独立随机抽取 <strong>x</strong> 次（可重复）生成最终序列。<br>
             🚫 开启「避免相邻重复」后，相邻两个位置的数字不会相同（若池中只有1个数字则无法避免，会提示）。<br>
-            📦 开启「分组显示」后，序列会按照池子大小分组展示，每组作为一个记忆点，方便记忆和练习。
+            📦 开启「分组显示」后，序列会按照池子大小分组展示，每组作为一个记忆点，方便记忆和练习。<br>
+            🎰 点击数字按钮可以切换是否包含在可用数字中，默认全选。
         </div>
     </div>
 </div>
@@ -540,15 +609,18 @@
     
     // 分组显示模式的开关状态
     let showGrouped = false;
+    
+    // 用户选择的可用数字
+    let selectedDigits = [1, 2, 3, 4, 5, 6, 7];
 
     /**
-     * 从 FULL_SET 中随机选出 n 个不重复的数字 (Fisher-Yates 洗牌取前n)
+     * 从用户选择的数字中随机选出 n 个不重复的数字 (Fisher-Yates 洗牌取前n)
      */
     function selectRandomDigits(n) {
-        if (n < 1 || n > FULL_SET.length) {
-            throw new Error(`n必须在1-${FULL_SET.length}之间`);
+        if (n < 1 || n > selectedDigits.length) {
+            throw new Error(`n必须在1-${selectedDigits.length}之间`);
         }
-        const shuffled = [...FULL_SET];
+        const shuffled = [...selectedDigits];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -567,9 +639,13 @@
         let validN = n;
         let validX = x;
         if (isNaN(validN) || validN < 1) validN = 1;
-        if (validN > 7) validN = 7;
+        if (validN > selectedDigits.length) validN = selectedDigits.length;
         if (isNaN(validX) || validX < 1) validX = 1;
         if (validX > 800) validX = 800;
+
+        if (selectedDigits.length === 0) {
+            return { sequence: [], pool: [] };
+        }
 
         const selectedPool = selectRandomDigits(validN);
         const sequence = [];
@@ -845,12 +921,29 @@
             inputX.value = x;
         }
 
-        n = Math.min(7, Math.max(1, n));
+        const maxPossibleN = selectedDigits.length;
+        const originalN = n;
+        n = Math.min(maxPossibleN, Math.max(1, n));
         if (x > 800) x = 800;
+
+        // 如果n被调整了，更新输入框并显示提示
+        if (originalN !== n && maxPossibleN > 0) {
+            inputN.value = n;
+            showMessage(`当前可选数字为 ${maxPossibleN} 个，已自动调整池子大小为 ${n}`, false);
+        }
 
         highlightActiveQuickButton();
 
         try {
+            if (selectedDigits.length === 0) {
+                showMessage('请至少选择一个可用数字', true);
+                digitsContainer.innerHTML = '<div class="empty-placeholder">请至少选择一个可用数字</div>';
+                selectedPoolDisplay.innerText = '❌ 无数字';
+                usedUniqueCountSpan.innerText = '0';
+                sequenceLengthBadge.innerText = `长度: 0`;
+                return;
+            }
+
             const { sequence, pool } = generate(n, x, avoidAdjacentRepeat);
             renderSequence(sequence, pool, avoidAdjacentRepeat);
 
@@ -872,9 +965,34 @@
     function resetToDefault() {
         inputN.value = '3';
         inputX.value = '30';
+        // 重置数字选择为全选
+        selectedDigits = [1, 2, 3, 4, 5, 6, 7];
+        const digitButtons = document.querySelectorAll('.digit-btn');
+        digitButtons.forEach(btn => btn.classList.add('active'));
         highlightActiveQuickButton();
         performGeneration();
-        showMessage('已恢复默认值 n=3, x=30', false);
+        showMessage('已恢复默认值 n=3, x=30，数字全选', false);
+    }
+
+    // 切换数字选择状态
+    function toggleDigit(digit) {
+        const index = selectedDigits.indexOf(digit);
+        if (index > -1) {
+            selectedDigits.splice(index, 1);
+        } else {
+            selectedDigits.push(digit);
+        }
+        // 按数字顺序排序
+        selectedDigits.sort((a, b) => a - b);
+        // 重新生成序列
+        performGeneration();
+        // 显示选择状态
+        const selectedCount = selectedDigits.length;
+        if (selectedCount > 0) {
+            showMessage(`已选择 ${selectedCount} 个数字: ${selectedDigits.join(', ')}`, false);
+        } else {
+            showMessage('请至少选择一个数字', true);
+        }
     }
 
     // 切换避免相邻重复模式
@@ -942,6 +1060,19 @@
                 toggleGroupDisplay();
             });
         }
+
+        // 绑定数字选择按钮
+        const digitButtons = document.querySelectorAll('.digit-btn');
+        digitButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const digit = parseInt(btn.getAttribute('data-digit'), 10);
+                if (!isNaN(digit)) {
+                    btn.classList.toggle('active');
+                    toggleDigit(digit);
+                }
+            });
+        });
 
         quickButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
