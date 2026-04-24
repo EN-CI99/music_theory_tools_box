@@ -408,23 +408,25 @@
         .group-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 0.5rem;
+            justify-content: flex-start;
         }
 
         .grouped-digit {
             background: linear-gradient(145deg, #ffffff, #f3f8fe);
             border-radius: 1.2rem;
-            min-width: 2rem;
-            height: 2rem;
+            min-width: 2.2rem;
+            height: 2.2rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #1f4e6e;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
             border: 1px solid #e2edf6;
             font-family: 'SF Mono', 'Fira Code', monospace;
+            flex: 0 0 auto;
         }
 
         @media (max-width: 480px) {
@@ -432,14 +434,14 @@
                 padding: 0.5rem 0.7rem;
             }
             
-            .grouped-digit {
-                min-width: 1.8rem;
-                height: 1.8rem;
-                font-size: 0.8rem;
+            .group-content {
+                gap: 0.4rem;
             }
             
-            .group-content {
-                gap: 0.3rem;
+            .grouped-digit {
+                min-width: 2rem;
+                height: 2rem;
+                font-size: 0.9rem;
             }
         }
 
